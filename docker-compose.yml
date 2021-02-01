@@ -1,18 +1,47 @@
-version: '3'
+version: '3.7'
+
 services:
   rpi-monitor:
-    image: michaelmiklis/rpi-monitor:latest
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        VERSION: focal
+    # image: michaelmiklis/rpi-monitor:latest
+    image: rpi-monitor:focal
+
     container_name: rpi-monitor
+    devices:
+      - "/dev/vchiq"
+      - "/dev/vcsm-cma"
+      # - "/dev/vchiq:/dev/vchiq" 
+      # # - "/dev/vcsm:/dev/vcsm"  
+      # - "/dev/vcsm-cma:/dev/vcsm"
+    # environment:
     volumes:
-      - /opt/vc:/opt/vc
       - /boot:/boot
+      - /opt/vc:/opt/vc
       - /sys:/dockerhost/sys:ro
       - /etc:/dockerhost/etc:ro
       - /proc:/dockerhost/proc:ro
       - /usr/lib:/dockerhost/usr/lib:ro
-    devices:
-      - "/dev/vchiq:/dev/vchiq" 
-      - "/dev/vcsm:/dev/vcsm"  
-    restart: unless-stopped
+    # networks:
     ports:
       - 8888:8888
+    restart: unless-stopped
+    # privileged: true
+
+
+# # Equivalent to:
+# docker run \
+#   --device=/dev/vchiq \
+#   --device=/dev/vcsm \
+#   --volume=/boot:/boot \
+#   --volume=/opt/vc:/opt/vc \
+#   --volume=/sys:/dockerhost/sys:ro \
+#   --volume=/etc:/dockerhost/etc:ro \
+#   --volume=/proc:/dockerhost/proc:ro \
+#   --volume=/usr/lib:/dockerhost/usr/lib:ro \
+#   -p=8888:8888
+
+  

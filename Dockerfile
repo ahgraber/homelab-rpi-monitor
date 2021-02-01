@@ -1,21 +1,26 @@
-FROM resin/rpi-raspbian:latest
+  
+ARG VERSION
+FROM ubuntu:$VERSION
+# FROM resin/rpi-raspbian:latest
 
-LABEL maintainer="Michael Miklis / <info@michaelmiklis.de>"
-
-RUN [ "cross-build-start" ]
+# RUN [ "cross-build-start" ]  # raspian
 
 ENV  DEBIAN_FRONTEND noninteractive
 
+USER root
+
 # Install RPI-Monitor form Xavier Berger's repository
 RUN apt-get -y update && \
-    apt-get install -y --no-install-recommends dirmngr apt-transport-https ca-certificates  && \
-    apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 2C0D3C0F && \
+    apt-get install -y --no-install-recommends dirmngr apt-transport-https ca-certificates gnupg2 
+    
+RUN apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 2C0D3C0F && \
     echo deb http://giteduberger.fr rpimonitor/ > /etc/apt/sources.list.d/rpimonitor.list && \
     apt-get -y update && \
     apt-get install -y rpimonitor && \
     apt-get clean && \
-    apt-get autoclean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    apt-get autoclean 
+
+RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     sed -i 's/\/sys\//\/dockerhost\/sys\//g' /etc/rpimonitor/template/* && \ 
     sed -i 's/\/etc\/os-release/\/dockerhost\/usr\/lib\/os-release/g' /etc/rpimonitor/template/version.conf && \
     sed -i 's/\/proc\//\/dockerhost\/proc\//g' /etc/rpimonitor/template/* && \
@@ -31,6 +36,6 @@ EXPOSE 8888
 # Start rpimonitord using run.sh wrapper script
 ADD run.sh /run.sh
 RUN chmod +x /run.sh
-CMD bash -C '/run.sh';'bash'
-
-RUN [ "cross-build-end" ]
+# CMD bash -C '/run.sh';'bash'
+ENTRYPOINT [ "./run.sh" ]
+# RUN [ "cross-build-end" ]  # raspian
